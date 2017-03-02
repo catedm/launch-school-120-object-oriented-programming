@@ -59,11 +59,17 @@ class Move
 end
 
 class Player
-  attr_accessor :move, :name, :score
+  attr_accessor :move, :name, :score, :move_history, :won_or_lost_history
 
   def initialize
     @score = 0
+    @move_history = []
+    @won_or_lost_history = []
     set_name
+  end
+
+  def move_history
+    @move_history
   end
 end
 
@@ -88,6 +94,7 @@ class Human < Player
       puts "Sorry, invalid choice."
     end
     self.move = Move.new(choice)
+    @move_history << Move.new(choice).to_s
   end
 end
 
@@ -98,6 +105,7 @@ class Computer < Player
 
   def choose
     self.move = Move.new(Move::VALUES.sample)
+    @move_history << self.move.to_s
   end
 end
 
@@ -136,6 +144,16 @@ class RPSGame
     end
   end
 
+  def build_move_history
+    if human.move > computer.move
+      human.won_or_lost_history << "WON"
+    elsif human.move < computer.move
+      human.won_or_lost_history << "LOST"
+    else
+      human.won_or_lost_history << "TIE"
+    end
+  end
+
   def calculate_score
     if human.move > computer.move
       human.score += 1
@@ -153,6 +171,13 @@ class RPSGame
     puts "#{computer.name} has #{computer.score} points."
     puts "--------------------------------"
     puts " "
+  end
+
+  def display_move_history
+    rounds = human.move_history.zip(computer.move_history)
+    rounds.each_with_index do |round, idx|
+      puts "ROUND #{idx + 1}: #{round.first} vs #{round.last}:" + " #{human.won_or_lost_history[idx]}"
+    end
   end
 
   def play_again?
@@ -176,10 +201,13 @@ class RPSGame
       computer.choose
       display_moves
       display_winner
+      build_move_history
       calculate_score
       display_score
       break if human.score == POINTS_TO_WIN || computer.score == POINTS_TO_WIN
     end
+    display_move_history
+    puts ''
     display_goodbye_message
   end
 end

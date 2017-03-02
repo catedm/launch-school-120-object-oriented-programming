@@ -2,6 +2,8 @@ POINTS_TO_WIN = 3
 
 class Move
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
+  HAL_CHOICES = ['scissors', 'lizard', 'spock']
+  R2D2_CHOICES = ['rock', 'paper']
 
   def initialize(value)
     @value = value
@@ -59,10 +61,14 @@ class Move
 end
 
 class Player
-  attr_accessor :move, :name, :score
+  attr_accessor :move, :name, :score, :won_or_lost_history, :message
+  attr_reader :move_history
 
   def initialize
     @score = 0
+    @move_history = []
+    @won_or_lost_history = []
+    @message = ''
     set_name
   end
 end
@@ -88,6 +94,7 @@ class Human < Player
       puts "Sorry, invalid choice."
     end
     self.move = Move.new(choice)
+    @move_history << Move.new(choice).to_s
   end
 end
 
@@ -97,7 +104,24 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::VALUES.sample)
+    if name == "Hal"
+      self.move = Move.new(Move::HAL_CHOICES.sample)
+    elsif name == "R2D2"
+      self.move = Move.new(Move::R2D2_CHOICES.sample)
+    else
+      self.move = Move.new(Move::VALUES.sample)
+    end
+    @move_history << move.to_s
+  end
+
+  def message
+    if name == 'R2D2'
+      self.message = 'Beep! Bop bop!'
+    elsif name == "Hal"
+      self.message = "I'm a HUGE Star Treck fan."
+    else
+      self.message = "I'am always the smartest man in the room."
+    end
   end
 end
 
@@ -110,14 +134,19 @@ class RPSGame
   end
 
   def display_welcome_message
-    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock #{human.name}! The first player to #{POINTS_TO_WIN} wins."
+    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock #{human.name}!"
+    puts "The first player to #{POINTS_TO_WIN} wins."
+  end
+
+  def display_opponent_message
+    puts "Your opponent is #{computer.name} - '#{computer.message}'"
   end
 
   def display_goodbye_message
     if computer.score == POINTS_TO_WIN
-      puts "#{computer.name} WINS!"
+      puts "#{computer.name} WINS"
     else
-      puts "#{human.name} WINS!"
+      puts "YOU WIN"
     end
   end
 
@@ -136,13 +165,21 @@ class RPSGame
     end
   end
 
+  def build_move_history
+    if human.move > computer.move
+      human.won_or_lost_history << "WON"
+    elsif human.move < computer.move
+      human.won_or_lost_history << "LOST"
+    else
+      human.won_or_lost_history << "TIED"
+    end
+  end
+
   def calculate_score
     if human.move > computer.move
       human.score += 1
-    elsif human.move < computer.move
-      computer.score += 1
     else
-      nil
+      computer.score += 1
     end
   end
 
@@ -153,6 +190,13 @@ class RPSGame
     puts "#{computer.name} has #{computer.score} points."
     puts "--------------------------------"
     puts " "
+  end
+
+  def display_move_history
+    rounds = human.move_history.zip(computer.move_history)
+    rounds.each_with_index do |round, idx|
+      puts "ROUND #{idx + 1}: #{round.first} vs #{round.last}: YOU" + " #{human.won_or_lost_history[idx]}"
+    end
   end
 
   def play_again?
@@ -171,16 +215,20 @@ class RPSGame
 
   def play
     display_welcome_message
+    display_opponent_message
     loop do
       human.choose
       computer.choose
       display_moves
       display_winner
+      build_move_history
       calculate_score
       display_score
       break if human.score == POINTS_TO_WIN || computer.score == POINTS_TO_WIN
     end
     display_goodbye_message
+    puts ''
+    display_move_history
   end
 end
 
