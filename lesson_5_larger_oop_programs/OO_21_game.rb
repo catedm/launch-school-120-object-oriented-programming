@@ -1,7 +1,4 @@
-require "pry"
-
 module Hand
-
   def busted?
     total > 21
   end
@@ -26,7 +23,6 @@ module Hand
 
     sum
   end
-
 end
 
 class Player
@@ -49,7 +45,9 @@ end
 
 class Deck
   SUITS = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
-  VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+  VALUES =
+    ['2', '3', '4', '5', '6', '7', '8', '9', '10',
+     'Jack', 'Queen', 'King', 'Ace']
 
   attr_accessor :deck
 
@@ -67,7 +65,6 @@ class Deck
 end
 
 class Game
-
   attr_reader :player, :dealer, :deck
 
   def initialize
@@ -100,7 +97,7 @@ class Game
       break
     end
 
-      display_goodbye_message
+    display_goodbye_message
   end
 
   private
@@ -141,7 +138,7 @@ class Game
     if player.busted?
       puts "You BUSTED!"
       determine_winner
-      return display_winner
+      display_winner
     end
   end
 
@@ -169,7 +166,7 @@ class Game
     puts "It's your turn!"
 
     loop do
-    choice = nil
+      choice = nil
       loop do
         puts "Would you like to hit or stay? (h/s)"
         choice = gets.chomp
@@ -183,17 +180,19 @@ class Game
         sleep 1
         display_player_cards
         player.busted? ? puts("You BUSTED!") : nil
-      else choice == "s"
+      else
         puts "You stayed at #{player.total}"
       end
 
-      break if choice == "s" || player.busted?
+      if choice == "s" || player.busted?
+        break
+      end
     end
   end
 
-  def format_player_card_display(hand)
+  def format_player_cards(hand)
     result = ""
-    hand.each { |card| result += "#{card[0] + " of " + card[1]}, " }
+    hand.each { |card| result += card[0].to_s + " of " + card[1].to_s + ", " }
     result[0..-3]
   end
 
@@ -202,17 +201,24 @@ class Game
   end
 
   def display_player_cards
-    puts "Your cards are now: " + format_player_card_display(player.cards) + " for a total of #{player.total}"
+    puts "Your cards are now:"
+    puts format_player_cards(player.cards) + " for a total of #{player.total}"
   end
 
   def display_intial_cards
-    puts "Your cards: " + format_player_card_display(player.cards) + " for a total of #{player.total}"
-    puts "Dealer cards: " + format_dealer_card_display_hidden(dealer.cards)
+    puts "Your cards:"
+    puts format_player_cards(player.cards) + " for a total of #{player.total}"
+    puts ""
+    puts "Dealer cards:"
+    puts format_dealer_card_display_hidden(dealer.cards)
   end
 
   def display_final_cards
-    puts "Your cards: " + format_player_card_display(player.cards) + " for a total of #{player.total}"
-    puts "Dealer cards: " + format_player_card_display(dealer.cards) + " for a total of #{dealer.total}"
+    puts "Your cards:"
+    puts format_player_cards(player.cards) + " for a total of #{player.total}"
+    puts ""
+    puts "Dealer cards:"
+    puts format_player_cards(dealer.cards) + " for a total of #{dealer.total}"
   end
 
   def determine_winner
@@ -224,7 +230,7 @@ class Game
       :player_wins
     elsif player.total < dealer.total
       :dealer_wins
-    else player.total == dealer.total
+    else
       :tie
     end
   end
@@ -232,8 +238,9 @@ class Game
   def display_winner
     puts ""
     puts "RESULTS:"
+    message_lines
     display_final_cards
-    puts ""
+    message_lines
     case determine_winner
     when :player_busted then puts "You BUSTED! The dealer wins."
     when :dealer_busted then puts "Dealer BUSTED! You win."
