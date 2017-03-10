@@ -32,7 +32,7 @@ class Board
 
   def at_risk_square
     WINNING_LINES.each do |line|
-      squares = @squares.select { |k, v| k == line[0] || k == line[1] || k == line[2] }
+      squares = @squares.select { |k, _| k == line[0] || k == line[1] || k == line[2] }
       if two_identical_player_markers?(squares.values)
         return squares.keys.select { |key| squares[key].unmarked? }.last
       end
@@ -42,7 +42,7 @@ class Board
 
   def winning_square
     WINNING_LINES.each do |line|
-      squares = @squares.select { |k, v| k == line[0] || k == line[1] || k == line[2] }
+      squares = @squares.select { |k, _| k == line[0] || k == line[1] || k == line[2] }
       if two_identical_computer_markers?(squares.values)
         return squares.keys.select { |key| squares[key].unmarked? }.last
       end
@@ -236,7 +236,8 @@ class TTTGame
 
   def display_board
     puts ""
-    puts "Let's play #{human.name}! You're a #{human.marker}. Computer is a #{computer.marker}."
+    puts "Let's play #{human.name}! You're a #{human.marker}."
+    puts "#{computer.name} is a #{computer.marker}."
     puts "The first player to reach #{ROUNDS_TO_WIN} wins!"
     puts ""
     board.draw
@@ -257,7 +258,7 @@ class TTTGame
 
   def computer_moves
     if board.winning_square
-       board[board.winning_square] = computer.marker
+      board[board.winning_square] = computer.marker
     elsif board.at_risk_square
       board[board.at_risk_square] = computer.marker
     elsif board.square_five_unmarked?
@@ -268,11 +269,11 @@ class TTTGame
   end
 
   def choose_first_to_move
-    puts "Who would you like to move first? (me/computer)"
+    puts "Who would you like to move first? (Me / #{computer.name})"
     answer = ''
     loop do
       answer = gets.chomp.downcase
-      break if answer.start_with?("m") || answer.start_with?("c")
+      break if answer.start_with?("m", computer.name[0].downcase)
       puts "Sorry, that's not a valid choice."
     end
 
@@ -296,20 +297,12 @@ class TTTGame
       human.score += 1
     when computer.marker
       computer.score += 1
-    else
-      nil
     end
   end
 
   def display_score
-    case board.winning_marker
-    when human.marker
-      puts "HUMAN: #{human.score} COMPUTER #{computer.score}"
-    when computer.marker
-      puts "HUMAN: #{human.score} COMPUTER #{computer.score}"
-    else
-      nil
-    end
+    puts "#{human.name}: #{human.score}"
+    puts "#{computer.name}: #{computer.score}"
   end
 
   def display_result
