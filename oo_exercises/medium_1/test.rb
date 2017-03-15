@@ -1,0 +1,2 @@
+tokens = %w(ADD SUB MULT DIV MOD POP PUSH PRINT)
+string = %w(-3 PUSH 5 XSUB PRINT)
